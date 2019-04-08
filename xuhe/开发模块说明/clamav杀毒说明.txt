@@ -1,0 +1,2 @@
+http://49.4.66.187/evanxuhe/clamav-scan
+实际的clamavd的ECS地址114.115.146.100
