@@ -1,0 +1,105 @@
+参考博客：http://www.imooc.com/article/270570
+
+可以在网页查看各个服务运行状态 ： 
+    HDFS  :  http://114.115.128.138:50070    
+    ResourceManager :  http://114.115.128.138:8088
+
+#hadoop安装目录： 
+    软件位置：  /usr/local/soft/hadoop
+    配置文件目录： /usr/local/soft/hadoop/etc/hadoop
+    datanode节点位置：  /data/hadoop/tmp
+
+ssh-copy-id -i ~/.ssh/id_rsa.pub s2
+ssh-copy-id -i ~/.ssh/id_rsa.pub s3
+ssh-copy-id -i ~/.ssh/id_rsa.pub s4
+
+
+hadoop-env.sh
+    export JAVA_HOME=/home/hadoop/app/jdk1.7.0_79
+
+
+core-site.xml
+    <property>
+        <name>fs.default.name</name>
+        <value>hdfs://s2:8020</value>
+    </property>
+
+hdfs-site.xml
+
+   F:\e-develop\2019-code\vscode-2019\linux-study\TXT\hadoop集群
+
+*******服务器******
+     <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>/data/hadoop/tmp/dfs/name</value>
+    </property>
+    <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>/data/hadoop/tmp/dfs/data</value>
+    </property>
+
+
+yarn-site.xml
+
+    <property>
+        <name>yarn.nodemanager.aux-services</name>
+        <value>mapreduce_shuffle</value>
+    </property>
+   <property>
+        <name>yarn.resourcemanager.hostname</name>
+        <value>s2</value>
+   </property>
+
+mapred-site.xml
+
+    <property>
+        <name>mapreduce.framework.name</name>
+        <value>yarn</value>
+    </property>
+修改：
+    slaves
+        s1
+        s2
+        s3
+
+
+2）分发安装包到hadoop001和hadoop002节点上
+（注意：三台机器的用户名都是一样的，只是机器名不一样哦）
+
+#分发hadoop和jdk，因文件比较大、分发过程可能有点慢scp -r ~/app hadoop@hadoop001:~/scp -r ~/app hadoop@hadoop002:~/
+    #分发配置文件scp ~/.bash_profile hadoop@hadoop001:~/scp ~/.bash_profile hadoop@hadoop002:~/
+在学习过程中强烈推荐使用伪分布式
+在hadoop001和hadoop002机器上让.bash_profile生效
+
+
+ tar -xf hadoop-native-64-2.6.0.tar -C hadoop-cdh/lib/native/
+
+
+#分别在hadoop001和hadoop002中执行source ~/.bash_profile
+3）对NameNode做格式化：只要在hadoop000机器上执行即可
+
+hdfs namenode -format
+4）启动集群:只要在hadoop000上执行即可
+
+sbin/start-all.sh
+5）验证：jps
+
+
+
+
+6）停止机器：在hadoop000上执行即可
+
+sbin/stop-all.sh
+至此，hadoop集群搭建完毕！
+
+
+
+#问题解决
+1、WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform...
+现在native（下载2.6对应的tar包）：http://dl.bintray.com/sequenceiq/sequenceiq-bin/
+配置native环境变量：https://blog.csdn.net/u010003835/article/details/81127984
+
+
+    export  HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
+    export  HADOOP_HOME=/usr/local/soft/hadoop
+    export  HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib:$HADOOP_COMMON_LIB_NATIVE_DIR"

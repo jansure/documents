@@ -1,0 +1,243 @@
+#s1、s2启动flume命令：
+
+   nohup  flume/bin/flume-ng agent --conf /usr/local/soft/flume/conf --conf-file /usr/local/soft/flume/conf/flume-conf.properties --name a1 -Dflume.root.logger=INFO,console > flume/logs/flume-server.log 2>&1 &
+#s3、s4、s5启动flume命令：
+
+   nohup  flume/bin/flume-ng agent --conf conf --conf-file flume/conf/flume-conf.properties --name a1 -Dflume.root.logger=DEBUG,console >flume/logs/flume-server.log 2>&1 &
+s3、s4、s5配置
+
+# Name the components on this agent
+a1.channels = c1
+a1.sources = r1
+a1.sinks = k1 k2
+
+ # Use a channel which buffers events in memory
+a1.channels.c1.type =file 
+
+a1.channels.c1.capacity = 1000000
+a1.channels.c1.transactionCapacity =1000
+a1.channels.c1.byteCapacity = 800000
+a1.channels.c1.keep-alive = 60
+a1.channels.c1.maxFileSize = 900000000
+
+a1.channels.hdfs_c2.checkpointDir = /data/flume/checkpoint
+a1.channels.hdfs_c2.backupCheckpointDir = /data/flume/backupcheckpoint
+a1.channels.hdfs_c2.dataDirs = /data/flume/data
+
+ #监听其它flume端口
+a1.sources.r1.type=avro
+#any address to listen
+a1.sources.r1.bind=0.0.0.0
+a1.sources.r1.port=52020
+a1.sources.r1.channels=c1
+
+#define the sink 1
+a1.sinks.k1.type=avro
+a1.sinks.k1.hostname=192.168.1.77
+a1.sinks.k1.port=52020
+a1.sinks.k1.channel=c1
+
+#define the sink 2
+a1.sinks.k2.type=avro
+a1.sinks.k2.hostname=192.168.1.136
+a1.sinks.k2.port=52020
+a1.sinks.k2.channel=c1
+
+ #define sinkgroups
+a1.sinkgroups=g1
+a1.sinkgroups.g1.sinks=k1 k2
+#a1.sinkgroups.g1.processor.type=failover
+#a1.sinkgroups.g1.processor.priority.k1=10
+#a1.sinkgroups.g1.processor.priority.k2=5
+#a1.sinkgroups.g1.processor.maxpenalty=10000
+#负载均衡配置
+a1.sinkgroups.g1.processor.type=load_balance
+a1.sinkgroups.g1.processor.backoff=true
+a1.sinkgroups.g1.processor.selector=round_robin
+s1、s2配置
+
+a1.sources = r1
+a1.channels = hdfs_c2
+a1.sinks = hdfs_k2
+
+#properties of avro-AppSrv-source
+a1.sources.r1.type = avro
+a1.sources.r1.bind = s1
+a1.sources.r1.port = 52020
+   #设置sources的channels
+a1.sources.r1.channels=hdfs_c2
+#增加拦截器 所有events,增加头,类似json格式里的"headers":{" key":" value"}
+  #拦截器名字
+#a1.sources.r1.interceptors = i1
+  #拦截器类型
+#a1.sources.r1.interceptors.i1.type = static
+  #自定义
+#a1.sources.r1.interceptors.i1.key = Collector
+   #自定义
+#a1.sources.r1.interceptors.i1.value =s1
+
+#set hdfs channel
+#a1.channels.hdfs_c2.type = memory
+a1.channels.hdfs_c2.type = file
+a1.channels.hdfs_c2.capacity = 1000000
+a1.channels.hdfs_c2.transactionCapacity = 100
+a1.channels.hdfs_c2.keep-alive = 60
+a1.channels.hdfs_c2.byteCapacity = 1000000
+a1.sinks.hdfs_k2.hdfs.idleTimeout=60
+
+a1.channels.hdfs_c2.checkpointDir = /data/flume/checkpoint
+a1.channels.hdfs_c2.backupCheckpointDir = /data/flume/backupcheckpoint
+a1.channels.hdfs_c2.dataDirs = /data/flume/data
+
+
+
+#set sink to hdfs
+  #传输到hdfs
+a1.sinks.hdfs_k2.type=hdfs
+ #传输的channel名
+a1.sinks.hdfs_k2.channel=hdfs_c2
+#所以这里写的是集群的Namespace
+#a1.sinks.hdfs_k2.hdfs.path=hdfs://114.115.170.6:9000/data/hadoop/test/%Y%m%d
+
+a1.sinks.hdfs_k2.hdfs.path=hdfs://s2:8020/data/hadoop/testflume/%{hostname}/%Y%m%d
+
+
+a1.sinks.hdfs_k2.hdfs.fileType=DataStream
+ #文本格式
+#a1.sinks.hdfs_k2.hdfs.writeFormat=TEXT
+#a1.sinks.hdfs_k2.hdfs.writeFormat=Text
+#这个flume保存在hdfs上的文件的大小的
+a1.sinks.hdfs_k2.hdfs.rollInterval=30
+#a1.sinks.hdfs_k2.hdfs.rollSize=2097152
+#超过六十秒关闭无效的文件
+a1.sinks.hdfs_k2.hdfs.idleTimeout=60
+#a1.sinks.hdfs_k2.hdfs.rollCount=10
+
+a1.sinks.hdfs_k2.hdfs.rollCount=0
+a1.sinks.hdfs_k2.hdfs.rollSize=0
+
+
+#失败1s回滚
+a1.sinks.hdfs_k2.hdfs.roundValue =1
+#文件名前缀
+a1.sinks.hdfs_k2.hdfs.filePrefix=%Y-%m-%d
+  #文件名后缀
+a1.sinks.hdfs_k2.hdfs.fileSuffix=.txt
+a1.sinks.hdfs_k2.hdfs.useLocalTimeStamp = true
+a1.sinks.hdfs_k2.hdfs.callTimeout = 40000
+a1.sinks.hdfs_k2.hdfs.threadsPoolSize = 50
+a1.sinks.hdfs_k2.hdfs.batchSize  = 100
+idea sdk中flume-client.properties配置
+
+#agent1 name
+agent1.channels = c1
+agent1.sources = r1 r2 r11 r21 r3
+agent1.sinks = k1 k2 k3
+
+#set channel
+agent1.channels.c1.type = file
+#存储在 Channel 当中的最大 events 数
+agent1.channels.c1.capacity = 1000000
+#同时刻从Source 获取，或发送到 Sink 的最大 events 数
+agent1.channels.c1.transactionCapacity = 100
+#byteCapacity最大内存所有事物允许总字节数
+agent1.channels.c1.byteCapacity = 800000
+#添加或删除一个 event 超时的秒数
+agent1.channels.c1.keep-alive = 60
+
+#agent1.sources.r2.type = exec
+##agent1.sources.r2.command = tail -f F:\\data\\test\\text0315.txt
+#agent1.sources.r2.command = tail -f /data/test/test/text0315-3.txt
+#agent1.sources.r2.channels = c1
+#agent1.sources.r2.inputCharset=utf-8
+
+#agent1.sources.r21.type = exec
+#agent1.sources.r21.command = tail -f F:\\data\\test11\\f21.log
+#agent1.sources.r21.channels = c1
+#agent1.sources.r21.inputCharset=utf-8
+#
+#收集 静态目录
+agent1.sources.r1.type = spooldir
+#agent1.sources.r1.spoolDir = F:\\data\\logdfs
+agent1.sources.r1.spoolDir = /data/test/logdfs/
+agent1.sources.r1.fileHeader = true
+agent1.sources.r1.channels = c1
+#
+agent1.sources.r11.type = spooldir
+#agent1.sources.r11.spoolDir = F:\\data\\logdfs11
+agent1.sources.r11.spoolDir = /data/test/logdfs11/
+agent1.sources.r11.fileHeader = true
+agent1.sources.r11.channels = c1
+agent1.sources.r11.ignorePattern = ^(.)*\\.log$
+
+#收集 动态目录
+agent1.sources.r3.type = TAILDIR
+agent1.sources.r3.channels  = c1
+agent1.sources.r3.filegroups = f1
+#agent1.sources.r3.filegroups.f1 = F:\\data\\aaaaa\\.*log.*
+agent1.sources.r3.filegroups.f1 = /data/test/test/.*log.*
+#
+agent1.sources.r3.interceptors = i2
+agent1.sources.r3.interceptors.i2.preserveExisting= true
+agent1.sources.r3.interceptors.i2.type = host
+agent1.sources.r3.interceptors.i2.hostHeader =hostname
+agent1.sources.r3.interceptors.i2.useIP = false
+
+
+# set sink1
+agent1.sinks.k1.channel = c1
+agent1.sinks.k1.type = avro
+agent1.sinks.k1.hostname = s3
+agent1.sinks.k1.port = 52020
+#set sink2
+#aent1.sinks.k2.channel = c1
+
+agent1.sinks.k2.channel = c1
+agent1.sinks.k2.type = avro
+agent1.sinks.k2.hostname = s4
+agent1.sinks.k2.port = 52020
+
+#set sink2
+agent1.sinks.k3.channel = c1
+agent1.sinks.k3.type = avro
+agent1.sinks.k3.hostname = s5
+agent1.sinks.k3.port = 52020
+
+##set gruop
+agent1.sinkgroups = g1
+##set sink group
+agent1.sinkgroups.g1.sinks = k1 k2 k3
+##set failover
+#agent1.sinkgroups.g1.processor.type = failover
+#agent1.sinkgroups.g1.processor.priority.k1 = 10
+#agent1.sinkgroups.g1.processor.priority.k2 = 5
+#agent1.sinkgroups.g1.processor.maxpenalty = 10000
+
+#设置负载均衡
+agent1.sinkgroups.g1.processor.type=load_balance
+agent1.sinkgroups.g1.processor.backoff=true
+agent1.sinkgroups.g1.processor.selector=round_robin
+保存到本地目录&主机拦截器
+
+#保存到本地目录
+agent1.sinks.k1.channel = c1
+agent1.sinks.k1.type = file_roll
+agent1.sinks.k1.sink.directory = E:\\data\\my_file
+agent1.sinks.k1.sink.rollInterval = 0
+
+#host 主机拦截器插入服务器的ip地址或者主机名，
+#agent将这些内容插入到事件的报头中。事件报头中的key使用hostHeader配置，默认是host
+agent1.sources.r1.interceptors = i2
+agent1.sources.r1.interceptors.i2.preserveExisting= true
+agent1.sources.r1.interceptors.i2.type = host
+agent1.sources.r1.interceptors.i2.hostHeader =hostname
+agent1.sources.r1.interceptors.i2.useIP = false
+kafka配置
+
+agent1.sinks.k4.channel = c1
+agent1.sinks.k4.type = org.apache.flume.sink.kafka.KafkaSink
+agent1.sinks.k4.brokerList = hadoop000:9092,hadoop001:9092,hadoop002:9092
+#agent1.sinks.k4.brokerList = hadoop000:9092
+agent1.sinks.k4.topic = topicnewtest1
+agent1.sinks.k4.batchSize = 5
+agent1.sinks.k4.requiredAcks = 1
