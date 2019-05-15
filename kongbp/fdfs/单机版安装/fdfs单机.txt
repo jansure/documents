@@ -1,0 +1,162 @@
+: set nu 显示行号
+网址：https://www.jianshu.com/p/e7034b344bed
+
+1、安装FastDFS需要先将官网下载的源码进行编译，编译依赖gcc环境
+
+ 如果没有gcc环境，需要安装gcc：
+
+yum install gcc-c++
+
+运行yum命令必须联网才行
+
+2、安装libevent
+
+FastDFS依赖libevent库，需要安装：
+
+yum -y install libevent
+
+3、安装libfastcommon
+cd /usr/local
+
+tar -zxvflibfastcommonV1.0.7.tar.gz
+
+cd libfastcommon-1.0.7
+
+./make.sh
+
+./make.sh install
+由于FastDFS程序引用usr/lib目录所以需要将/usr/lib64下的库文件拷贝至/usr/lib下，只需要将libfastcommon.so 
+cp usr/lib64/libfastcommon.so /usr/lib
+
+三、安装开始
+1、安装Tracker
+tar -zxvf   FastDFS_v5.05.tar.gz
+
+cd FastDFS
+
+./make.sh
+
+./make.sh install
+
+安装成功将安装目录下的conf下的文件拷贝到/etc/fdfs/下(进入conf目录)
+cp * /etc/fdfs/
+2、配置
+安装成功后进入/etc/fdfs目录：
+修改tracker.conf
+
+vi tracker.conf
+
+base_path=/home/yuqing/FastDFS
+：
+改为：
+base_path=/data/fastdfs
+
+启动
+/usr/bin/fdfs_trackerd /etc/fdfs/tracker.conf restart
+home目录下面
+mkdir fastdfs
+
+4、Storage安装、配置
+vi   storage.conf
+
+group_name=group1
+
+base_path=/home/yuqing/FastDFS改为：base_path=/home/fastdfs
+
+store_path0=/home/yuqing/FastDFS改为：store_path0=/home/fastdfs/fdfs_storage
+
+如果在/home下没有fastdfs，请先创建fastdfs文件夹，fastdfs下没有fdfs_storage,需要实现创建该文件夹。
+
+tracker_server=192.168.25.129:22122#配置tracker服务器:IP
+
+启动storage
+/usr/usr/usr/bin/fdfs_storaged /etc/fdfs/storage.conf restart
+
+6、上传图片测试
+FastDFS安装成功可通过/usr/bin/fdfs_test测试上传、下载等操作。
+
+修改/etc/fdfs/client.conf
+
+base_path=/home/fastdfs
+
+tracker_server=192.168.25.129:22122
+测试上传图片
+  cd /etc/fdfs
+ /usr/bin/fdfs_test client.conf upload anti-steal.jpg
+ 查看文件上传目录：
+/home/fastdfs/storage_path/data/00/00
+ 四、FastDFS和nginx整合
+ 1)FastDFS-nginx-module
+
+将FastDFS-nginx-module_v1.16.tar.gz传至/usr/local/下
+
+cd /usr/local
+
+tar -zxvfFastDFS-nginx-module_v1.16.tar.gz
+
+cdFastDFS-nginx-module/src
+
+修改config文件将/usr/local/路径改为/usr/
+
+
+将FastDFS-nginx-module/src下的mod_FastDFS.conf拷贝至/etc/fdfs/下
+
+cp mod_FastDFS.conf /etc/fdfs/
+
+并修改mod_FastDFS.conf的内容：
+
+vi /etc/fdfs/mod_FastDFS.
+
+base_path=/home/fastdfs
+
+tracker_server=192.168.25.129:22122
+
+url_have_group_name=true    #url中包含group名称
+
+store_path0=/home/fastdfs/fdfs_storage      #指定文件存储路径
+
+将libfdfsclient.so拷贝至/usr/lib下
+
+cp /usr/lib64/libfdfsclient.so    /usr/lib/
+
+创建nginx/client目录，为Nginx的安装做准备
+
+mkdir -p /var/temp/nginx/client
+
+五、Nginx的安装
+1、yum install gcc-c++
+
+2、yum install -y pcre pcre-devel
+
+3、yum install -y zlib zlib-devel
+
+4、yum install -y openssl openssl-devel
+进入到nginx的源码目录下，执行如下代码：
+
+./configure \
+--prefix=/usr/local/nginx \
+--pid-path=/var/run/nginx/nginx.pid \
+--lock-path=/var/lock/nginx.lock \
+--error-log-path=/var/log/nginx/error.log \
+--http-log-path=/var/log/nginx/access.log \
+--with-http_gzip_static_module \
+--http-client-body-temp-path=/var/temp/nginx/client \
+--http-proxy-temp-path=/var/temp/nginx/proxy \
+--http-fastcgi-temp-path=/var/temp/nginx/fastcgi \
+--http-uwsgi-temp-path=/var/temp/nginx/uwsgi \
+--http-scgi-temp-path=/var/temp/nginx/scgi \
+--add-module=/usr/local/fastdfs-nginx-module/src
+
+执行完毕后会生成一个MakeFile文件，然后就就可在该路径下进行编译和安装了
+
+编译：make
+
+安装：make install
+server {
+        listen       80;
+        server_name  192.168.20.5;
+
+        location /group1/M00/{
+                ngx_fastdfs_module;
+        }
+    } 
