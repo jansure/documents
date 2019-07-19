@@ -1,0 +1,2 @@
+﻿详见pkpm-flume-sdk以及 交接文件夹/flume下 Flume-SDK中flume-conf配置说明 word文档
+
