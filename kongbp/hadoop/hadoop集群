@@ -1,5 +1,9 @@
-参考博客：http://www.imooc.com/article/270570
+软件下载地址：
+	下载地址：http://archive.cloudera.com/cdh5/cdh/5/你想下载得tgz包
+	示例：http://archive.cloudera.com/cdh5/cdh/5/hadoop-2.6.0-cdh5.14.0.tar.gz
+	建议：首先在 http://archive.cloudera.com/cdh5/cdh/5 版本库下找到自己想要得版本(一般cdh版本要一致)，后加上 .tar.gz 下载即可
 
+安装教程参考博客：http://www.imooc.com/article/270570
 可以在网页查看各个服务运行状态 ： 
     HDFS  :  http://114.115.128.138:50070    
     ResourceManager :  http://114.115.128.138:8088
@@ -14,21 +18,16 @@ ssh-copy-id -i ~/.ssh/id_rsa.pub s3
 ssh-copy-id -i ~/.ssh/id_rsa.pub s4
 
 
-hadoop-env.sh
+hadoop-env.sh：
     export JAVA_HOME=/home/hadoop/app/jdk1.7.0_79
 
-
-core-site.xml
+core-site.xml：
     <property>
         <name>fs.default.name</name>
         <value>hdfs://s2:8020</value>
     </property>
 
-hdfs-site.xml
-
-   F:\e-develop\2019-code\vscode-2019\linux-study\TXT\hadoop集群
-
-*******服务器******
+hdfs-site.xml：
      <property>
         <name>dfs.namenode.name.dir</name>
         <value>/data/hadoop/tmp/dfs/name</value>
@@ -38,9 +37,7 @@ hdfs-site.xml
         <value>/data/hadoop/tmp/dfs/data</value>
     </property>
 
-
 yarn-site.xml
-
     <property>
         <name>yarn.nodemanager.aux-services</name>
         <value>mapreduce_shuffle</value>
@@ -51,54 +48,44 @@ yarn-site.xml
    </property>
 
 mapred-site.xml
-
     <property>
         <name>mapreduce.framework.name</name>
         <value>yarn</value>
     </property>
-修改：
-    slaves
+修改slaves配置：
         s1
         s2
         s3
 
 
 2）分发安装包到hadoop001和hadoop002节点上
-（注意：三台机器的用户名都是一样的，只是机器名不一样哦）
-
-#分发hadoop和jdk，因文件比较大、分发过程可能有点慢scp -r ~/app hadoop@hadoop001:~/scp -r ~/app hadoop@hadoop002:~/
-    #分发配置文件scp ~/.bash_profile hadoop@hadoop001:~/scp ~/.bash_profile hadoop@hadoop002:~/
-在学习过程中强烈推荐使用伪分布式
-在hadoop001和hadoop002机器上让.bash_profile生效
-
-
- tar -xf hadoop-native-64-2.6.0.tar -C hadoop-cdh/lib/native/
-
+   （注意：三台机器的用户名都是一样的，只是机器名不一样哦）
+	#分发hadoop和jdk，因文件比较大、分发过程可能有点慢scp -r ~/app hadoop@hadoop001:~/
+													  scp -r ~/app hadoop@hadoop002:~/
+	#分发配置文件scp ~/.bash_profile hadoop@hadoop001:~/
+				 scp ~/.bash_profile hadoop@hadoop002:~/
+	在学习过程中强烈推荐使用伪分布式
+	在hadoop001和hadoop002机器上让.bash_profile生效
 
 #分别在hadoop001和hadoop002中执行source ~/.bash_profile
+
 3）对NameNode做格式化：只要在hadoop000机器上执行即可
-
-hdfs namenode -format
+    hdfs namenode -format
+	
 4）启动集群:只要在hadoop000上执行即可
-
-sbin/start-all.sh
+	sbin/start-all.sh
 5）验证：jps
 
+6）停止机器上hdfs：在hadoop000上执行即可
+   sbin/stop-all.sh
+   至此，hadoop集群搭建完毕！
 
 
-
-6）停止机器：在hadoop000上执行即可
-
-sbin/stop-all.sh
-至此，hadoop集群搭建完毕！
-
-
-
+ ------------------hadoop常见问题解决方案------------------------------------------
 #问题解决
 1、WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform...
 现在native（下载2.6对应的tar包）：http://dl.bintray.com/sequenceiq/sequenceiq-bin/
 配置native环境变量：https://blog.csdn.net/u010003835/article/details/81127984
-
 
     export  HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
     export  HADOOP_HOME=/usr/local/soft/hadoop
@@ -109,35 +96,80 @@ sbin/stop-all.sh
 
 
 
- #解决方案：
-解决方案：namenode is  safe mode; http://www.cnblogs.com/taisenki/p/4643710.html     
-<property>
-  <name>dfs.namenode.replication.min</name>
-  <value>1</value>
-  <description>Minimal block replication. 
-  </description>
-</property>
+ 
+2、namenode is  safe mode;  （参考http://www.cnblogs.com/taisenki/p/4643710.html）     
+	<property>
+	  <name>dfs.namenode.replication.min</name>
+	  <value>1</value>
+	  <description>Minimal block replication. 
+	  </description>
+	</property>
 
-<property>
-  <name>dfs.namenode.safemode.threshold-pct</name>
-  <value>0.999f</value>
-  <description>
-    Specifies the percentage of blocks that should satisfy the minimal
-    replication requirement defined by dfs.namenode.replication.min.
-    Values less than or equal to 0 mean not to wait for any particular
-    percentage of blocks before exiting safemode.
-    Values greater than 1 will make safe mode permanent.
-  </description>
-</property>
-复制代码
+	<property>
+	  <name>dfs.namenode.safemode.threshold-pct</name>
+	  <value>0.999f</value>
+	  <description>
+		Specifies the percentage of blocks that should satisfy the minimal
+		replication requirement defined by dfs.namenode.replication.min.
+		Values less than or equal to 0 mean not to wait for any particular
+		percentage of blocks before exiting safemode.
+		Values greater than 1 will make safe mode permanent.
+	  </description>
+	</property>
+
+3、如果是hadoop集群上存储的文件太多，增加机器节点（参考链接： https://www.cnblogs.com/alex-blog/p/3179939.html）
+
+	增加机器不重启操作如下： 
+	首先，把新节点的 IP或主机名 加入主节点（master）的 conf/slaves 文件。 
+	然后登录新的从节点，执行以下命令： 
+		$ cd path/to/hadoop 
+		$ bin/hadoop-daemon.sh start datanode 
+		$ bin/hadoop-daemon.sh start tasktracker 
+	然后就可以在namanode机器上运行balancer，执行负载均衡 
+		$bin/hadoop  balancer		
+		
+4、	如果是hadoop集群上存储的文件太多，挂载数据盘（参考链接： https://my.oschina.net/wenzhenxi/blog/1591760）	
+
+> hdfs dfsadmin -report
+	Configured Capacity: 126421499904 (117.74 GB)
+	Present Capacity: 107068563456 (99.72 GB)
+	DFS Remaining: 81215922176 (75.64 GB)
+	DFS Used: 25852641280 (24.08 GB)
+	DFS Used%: 24.15%
+首先现需要下线挂载机器的hadoop datanode节点	
+	hadoop-daemon.sh stop datanode
+	
+修改hadoop-2配置文件vim hdfs-site.xml
+     > vim /usr/local/hadoop-2.7.3/etc/hadoop/hdfs-site.xml
+        <property>
+                <name>dfs.datanode.data.dir</name>
+                <value>file:/usr/local/hadoop-2.7.3/tmp/dfs/data,file:/mnt/dfs/data</value>
+        </property>
+		
+然后在启动datanode
+    > hadoop-daemon.sh start datanode
+	
+最后在挂载数据盘的机器执行命令查看集群状况就增加了100GB的DFS的空间
+	> hadoop dfsadmin -report
+		Configured Capacity: 231975649280 (216.04 GB)
+		Present Capacity: 207191623885 (192.96 GB)
+		DFS Remaining: 176628416512 (164.50 GB)
+		DFS Used: 30563207373 (28.46 GB)
+		DFS Used%: 14.75%	
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 
-##参考链接： https://www.cnblogs.com/alex-blog/p/3179939.html
-增加机器不重启操作如下： 
-首先，把新节点的 IP或主机名 加入主节点（master）的 conf/slaves 文件。 
-然后登录新的从节点，执行以下命令： 
-$ cd path/to/hadoop 
-$ bin/hadoop-daemon.sh start datanode 
-$ bin/hadoop-daemon.sh start tasktracker 
-然后就可以在namanode机器上运行balancer，执行负载均衡 
-$bin/hadoop  balancer
+
+
+
