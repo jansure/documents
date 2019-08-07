@@ -1,0 +1,90 @@
+计算步骤
+1、  登陆
+{"request":"GpOl_Login","username":"","password":""}
+服务器返回
+{"response":"ok","token":"","user_id":}
+记录下token和user_id
+然后发送"bye "，关闭连接，服务器收到bye也会关闭连接
+
+响应：{"response":"ok","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoMCIsInVzZXJJRCI6IjgyNiJ9.itU9-Z-VblC8fxBpqk5iNbcC1rT8DWi7jzwYWYsDR6c","user_id":826}
+
+（涉及发送文件需要拆分成两个接口）
+2、  新建一个项目
+{"request":"GpOl_ProjectNew","user_id":826,"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoMCIsInVzZXJJRCI6IjgyNiJ9.itU9-Z-VblC8fxBpqk5iNbcC1rT8DWi7jzwYWYsDR6c","project_name":"xuhetest","is_bdl":0,"bdl_name":"bdls(1).bdls","file_size":987805}
+
+{"request":"GpOl_ProjectNew","user_id":,"token":,"project_name":"","is_bdl":1,"file_size":}
+其中token和user_id用登陆后返回记录的。project_name可以随便用一个名字，is_bdl用0表示区域模型,file_size是工程文件的大小
+成功后服务端会发回一个状态表示准备接收文件
+{"response":"server_getfile_prepare"}
+然后开始发送文件，以二进制的方式发送（我们是用C的函数fopen_s打开文件fread读取文件进行发送）
+服务器根据大小，接收完毕后发送{"response":"ok"}
+然后发送"bye "，关闭连接，服务器收到bye也会关闭连接
+
+响应：{"bdls_id":643,"project_id":657,"response":"ok"}
+
+SELECT * FROM project
+WHERE user_id=826
+
+
+3、  找到刚才那个项目
+{"request":"GpOl_FindBdls","user_id":,"token":"","project_name":"","md5":""}
+其中md5是文件的md5值
+服务器会返回{"response":"ok","project_id":100,"bdls_id":200}
+记录下后面的两个id
+
+SELECT * FROM online_bdls
+WHERE project_id=657
+
+响应：{"bdls_id":643,"project_id":657,"response":"ok"}
+
+4、  发起计算请求
+{"request":"GpOl_Compute","user_id":,"token":"","project_id":,"bdls_id":,"platform":"galp","module_name":"PKPM-CFD","is_outdoor":"true","cal_item":"室外风环境模拟"}
+
+响应：{"cal_project_id":1007,"response":"ok"}
+
+SELECT * FROM cal_project
+WHERE id=1007
+
+
+5、查询计算内容
+{"request":"GpOl_QueryComputeUser","user_id":,"token":""}
+返回的id记录下来
+{"compute_items":[{"cal_date":"2019-02-14 10:49:54","cal_end_date":"2019-02-14 10:49:54",
+"cal_item":"室外风环境模拟","id":1004,"module_name":"PKPM-CFD","platform":"galp",
+"project_name":"寰愯春1","report_name":" ","status":"doing"},
+{"cal_date":"2019-02-14 16:07:07","cal_end_date":"2019-02-14 16:07:07",
+"cal_item":"室外风环境模拟","id":1005,"module_name":"PKPM-CFD","platform":"galp",
+"project_name":"寰愯春1","report_name":" ","status":"doing"},
+{"cal_date":"2019-02-14 16:09:40","cal_end_date":"2019-02-14 16:09:40",
+"cal_item":"室外风环境模拟","id":1006,"module_name":"PKPM-CFD","platform":"galp",
+"project_name":"徐贺2","report_name":" ","status":"doing"},
+{"cal_date":"2019-02-14 16:12:24","cal_end_date":"2019-02-14 16:12:24",
+"cal_item":"室外风环境模拟","id":1007,"module_name":"PKPM-CFD","platform":"galp",
+"project_name":"测试项目1","report_name":" ","status":"doing"},
+{"cal_date":"2019-02-14 17:11:38","cal_end_date":"2019-02-14 17:11:38",
+"cal_item":"室外风环境模拟","id":1008,"module_name":"PKPM-CFD","platform":"galp",
+"project_name":"测试项目1","report_name":" ","status":"doing"},
+{"cal_date":"2019-02-14 17:12:54","cal_end_date":"2019-02-14 17:12:54",
+"cal_item":"室外风环境模拟","id":1009,"module_name":"PKPM-CFD","platform":"galp",
+"project_name":"测试项目1","report_name":" ","status":"doing"}],"response":"ok"}
+
+
+（涉及发送文件需要拆分成两个接口）
+6、发送下载请求
+{"request":"GpOl_DownloadComputeReport","user_id":,"token":"","compute_item_id":,}
+服务端找到文件会返回文件大小filesize
+
+响应：{"file_size":1196489,"response":"server_sendfile_prepare"}
+
+再发送接收文件的标识
+{"response":"client_getfile_prepare"}
+这个时候服务端就会发送文件了。
+
+接收完毕后再发送
+{"response":"client_getfile_ok"}
+
+响应：{"response":"ok"}
+然后就结束了
+
+每个请求以\r\n\r\n结尾
+接收响应后发送bye \r\n\r\n到服务器

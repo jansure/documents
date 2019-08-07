@@ -1,0 +1,22 @@
+（绿建GIS服务端114.115.135.155）
+绿建计算内核调度中心
+postman（POST请求）
+1、登陆，获得user_id和token
+http://114.115.128.169:8080/gbs?request="GpOl_Login"&username="test"&password="123456"
+
+{"response":"ok","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoMCIsInVzZXJJRCI6IjgyMyJ9.GLrtwzAJCxu9cSTCI7FiBgQT5XgsnlqyNpelst8rfD4","user_id":823}
+
+2、调用计算
+http://114.115.128.169:8080/gbs?request="GpOl_GisOpenfoam_Compute"&user_id=823&token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoMCIsInVzZXJJRCI6IjgyMyJ9.GLrtwzAJCxu9cSTCI7FiBgQT5XgsnlqyNpelst8rfD4"
+
+{"project_id":18,"response":"ok"}
+
+3、查询计算
+http://114.115.128.169:8080/gbs?request="GpOl_GisOpenfoam_Status"&user_id=823&token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoMCIsInVzZXJJRCI6IjgyMyJ9.GLrtwzAJCxu9cSTCI7FiBgQT5XgsnlqyNpelst8rfD4"&project_id=15
+
+{"response":"ok","status":"done"}
+todo表示还没算完 done表示算完
+
+4、下载结果
+http://114.115.128.169:8080/gbs?request="GpOl_GisOpenfoam_DownloadResult"&user_id=823&token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhdXRoMCIsInVzZXJJRCI6IjgyMyJ9.GLrtwzAJCxu9cSTCI7FiBgQT5XgsnlqyNpelst8rfD4"&project_id=17
+下载返回的是一个压缩文件vtk.zip

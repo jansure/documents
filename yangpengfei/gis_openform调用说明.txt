@@ -1,0 +1,44 @@
+gis_openform调用说明
+
+一、调用计算
+ 1. 同之前的，先登陆，获得user_id和token
+ 2. 发送计算请求{"request":"GpOl_GisOpenfoam_Compute","token":"...","user_id":823}
+ 3. 返回{"project_id":11,"response":"ok"}
+ 4. 记下返回的project_id
+二、查询计算
+ 1. 同之前登陆
+ 2. 发送查询{"project_id":7,"request":"GpOl_GisOpenfoam_Status","token":"...","user_id":823}
+ 3. 返回{"response":"ok","status":"todo"}
+ 4. todo表示还没算完 done表示算完
+三、下载结果
+ 1. 同之前登陆
+ 2. 发送{"project_id":7,"request":"GpOl_GisOpenfoam_DownloadResult","token":"...","user_id":823}
+ 3. 下载返回的是一个压缩文件vtk.zip
+ 
+
+
+绿建接口：
+
+1、发起计算请求
+{"request":"GpOl_Compute","user_id":,"token":"","project_id":,"bdls_id":,"platform":"galp","module_name":"PKPM-CFD","is_outdoor":"true","cal_item":"室外风环境模拟"}
+响应：{"cal_project_id":1007,"response":"ok"}
+
+2、查询计算内容
+{"request":"GpOl_QueryComputeUser","user_id":,"token":""}
+返回的id记录下来
+
+3、发送下载请求
+{"request":"GpOl_DownloadComputeReport","user_id":,"token":"","compute_item_id":,}
+服务端找到文件会返回文件大小filesize
+
+响应：{"file_size":1196489,"response":"server_sendfile_prepare"}
+
+再发送接收文件的标识
+{"response":"client_getfile_prepare"}
+这个时候服务端就会发送文件了。
+
+接收完毕后再发送
+{"response":"client_getfile_ok"}
+
+响应：{"response":"ok"}
+然后就结束了
