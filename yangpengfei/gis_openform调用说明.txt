@@ -1,44 +1,48 @@
-gis_openformµ÷ÓÃËµÃ÷
+gis_openformè°ƒç”¨è¯´æ˜
 
-Ò»¡¢µ÷ÓÃ¼ÆËã
- 1. Í¬Ö®Ç°µÄ£¬ÏÈµÇÂ½£¬»ñµÃuser_idºÍtoken
- 2. ·¢ËÍ¼ÆËãÇëÇó{"request":"GpOl_GisOpenfoam_Compute","token":"...","user_id":823}
- 3. ·µ»Ø{"project_id":11,"response":"ok"}
- 4. ¼ÇÏÂ·µ»ØµÄproject_id
-¶ş¡¢²éÑ¯¼ÆËã
- 1. Í¬Ö®Ç°µÇÂ½
- 2. ·¢ËÍ²éÑ¯{"project_id":7,"request":"GpOl_GisOpenfoam_Status","token":"...","user_id":823}
- 3. ·µ»Ø{"response":"ok","status":"todo"}
- 4. todo±íÊ¾»¹Ã»ËãÍê done±íÊ¾ËãÍê
-Èı¡¢ÏÂÔØ½á¹û
- 1. Í¬Ö®Ç°µÇÂ½
- 2. ·¢ËÍ{"project_id":7,"request":"GpOl_GisOpenfoam_DownloadResult","token":"...","user_id":823}
- 3. ÏÂÔØ·µ»ØµÄÊÇÒ»¸öÑ¹ËõÎÄ¼şvtk.zip
+ä¸€ã€è°ƒç”¨è®¡ç®—
+ 1. åŒä¹‹å‰çš„ï¼Œå…ˆç™»é™†ï¼Œè·å¾—user_idå’Œtoken
+ 2. å‘é€è®¡ç®—è¯·æ±‚{"request":"GpOl_GisOpenfoam_Compute","token":"...","user_id":823}
+
+2019-08-09ä¿®æ”¹åï¼š
+{"request":"GpOl_GisOpenfoam_Compute2","token":"...","user_id":"1","file_size":"1000"}
+
+ 3. è¿”å›{"project_id":11,"response":"ok"}
+ 4. è®°ä¸‹è¿”å›çš„project_id
+äºŒã€æŸ¥è¯¢è®¡ç®—
+ 1. åŒä¹‹å‰ç™»é™†
+ 2. å‘é€æŸ¥è¯¢{"project_id":7,"request":"GpOl_GisOpenfoam_Status","token":"...","user_id":823}
+ 3. è¿”å›{"response":"ok","status":"todo"}
+ 4. todoè¡¨ç¤ºè¿˜æ²¡ç®—å®Œ doneè¡¨ç¤ºç®—å®Œ
+ä¸‰ã€ä¸‹è½½ç»“æœ
+ 1. åŒä¹‹å‰ç™»é™†
+ 2. å‘é€{"project_id":7,"request":"GpOl_GisOpenfoam_DownloadResult","token":"...","user_id":823}
+ 3. ä¸‹è½½è¿”å›çš„æ˜¯ä¸€ä¸ªå‹ç¼©æ–‡ä»¶vtk.zip
  
 
 
-ÂÌ½¨½Ó¿Ú£º
+ç»¿å»ºæ¥å£ï¼š
 
-1¡¢·¢Æğ¼ÆËãÇëÇó
-{"request":"GpOl_Compute","user_id":,"token":"","project_id":,"bdls_id":,"platform":"galp","module_name":"PKPM-CFD","is_outdoor":"true","cal_item":"ÊÒÍâ·ç»·¾³Ä£Äâ"}
-ÏìÓ¦£º{"cal_project_id":1007,"response":"ok"}
+1ã€å‘èµ·è®¡ç®—è¯·æ±‚
+{"request":"GpOl_Compute","user_id":,"token":"","project_id":,"bdls_id":,"platform":"galp","module_name":"PKPM-CFD","is_outdoor":"true","cal_item":"å®¤å¤–é£ç¯å¢ƒæ¨¡æ‹Ÿ"}
+å“åº”ï¼š{"cal_project_id":1007,"response":"ok"}
 
-2¡¢²éÑ¯¼ÆËãÄÚÈİ
+2ã€æŸ¥è¯¢è®¡ç®—å†…å®¹
 {"request":"GpOl_QueryComputeUser","user_id":,"token":""}
-·µ»ØµÄid¼ÇÂ¼ÏÂÀ´
+è¿”å›çš„idè®°å½•ä¸‹æ¥
 
-3¡¢·¢ËÍÏÂÔØÇëÇó
+3ã€å‘é€ä¸‹è½½è¯·æ±‚
 {"request":"GpOl_DownloadComputeReport","user_id":,"token":"","compute_item_id":,}
-·şÎñ¶ËÕÒµ½ÎÄ¼ş»á·µ»ØÎÄ¼ş´óĞ¡filesize
+æœåŠ¡ç«¯æ‰¾åˆ°æ–‡ä»¶ä¼šè¿”å›æ–‡ä»¶å¤§å°filesize
 
-ÏìÓ¦£º{"file_size":1196489,"response":"server_sendfile_prepare"}
+å“åº”ï¼š{"file_size":1196489,"response":"server_sendfile_prepare"}
 
-ÔÙ·¢ËÍ½ÓÊÕÎÄ¼şµÄ±êÊ¶
+å†å‘é€æ¥æ”¶æ–‡ä»¶çš„æ ‡è¯†
 {"response":"client_getfile_prepare"}
-Õâ¸öÊ±ºò·şÎñ¶Ë¾Í»á·¢ËÍÎÄ¼şÁË¡£
+è¿™ä¸ªæ—¶å€™æœåŠ¡ç«¯å°±ä¼šå‘é€æ–‡ä»¶äº†ã€‚
 
-½ÓÊÕÍê±ÏºóÔÙ·¢ËÍ
+æ¥æ”¶å®Œæ¯•åå†å‘é€
 {"response":"client_getfile_ok"}
 
-ÏìÓ¦£º{"response":"ok"}
-È»ºó¾Í½áÊøÁË
+å“åº”ï¼š{"response":"ok"}
+ç„¶åå°±ç»“æŸäº†
